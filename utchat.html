@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="https://flivo.ai/wp-content/uploads/2023/03/fliveai-logo2.jpeg" type="image/x-icon">
+    <title>FlivoChats</title>
+    <style>
+        /* Add your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background-color: #3b5998;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .chat-area {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+        }
+
+        .input-area {
+            display: flex;
+            border-top: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            margin-right: 10px;
+        }
+
+        .send-button {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="header">
+            <h1>FlivoChats</h1>
+        </div>
+        <div class="chat-area" id="chatArea">
+            <!-- Chat messages will be displayed here -->
+        </div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type a message..." />
+            <button class="send-button" id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const sendButton = document.getElementById('sendButton');
+        const userInput = document.getElementById('userInput');
+        const chatArea = document.getElementById('chatArea');
+
+        sendButton.addEventListener('click', async () => {
+            const userMessage = userInput.value;
+            addMessageToChat('You: ' + userMessage);
+            userInput.value = '';
+
+            const botResponse = await getBotResponse(userMessage);
+            addMessageToChat('Bot: ' + botResponse);
+        });
+
+        async function getBotResponse(query) {
+            try {
+                const response = await fetch("http://34.133.140.40:5005/webhooks/rest/webhook", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ sender: "user", message: query }),
+                });
+                const data = await response.json();
+                return data[0]?.text || "Sorry, I didn't understand that.";
+            } catch (error) {
+                console.error('Error fetching bot response:', error);
+                return "Error: Unable to get response.";
+            }
+        }
+
+        function addMessageToChat(message) {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            chatArea.appendChild(messageElement);
+            chatArea.scrollTop = chatArea.scrollHeight; // Scroll to the bottom
+        }
+    </script>
+</body>
+</html>
